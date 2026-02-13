@@ -7,6 +7,37 @@ type ParsedEvent = {
   timestamp?: string;
 };
 
+const normalizeIcsTimestamp = (value: string): string | undefined => {
+  const compactDate = /^(\d{4})(\d{2})(\d{2})$/;
+  const compactDateTimeZulu = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/;
+  const compactDateTimeFloating = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
+
+  const dateMatch = value.match(compactDate);
+  if (dateMatch) {
+    const [, year, month, day] = dateMatch;
+    return `${year}-${month}-${day}T00:00:00.000Z`;
+  }
+
+  const dateTimeZuluMatch = value.match(compactDateTimeZulu);
+  if (dateTimeZuluMatch) {
+    const [, year, month, day, hours, minutes, seconds] = dateTimeZuluMatch;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+  }
+
+  const dateTimeFloatingMatch = value.match(compactDateTimeFloating);
+  if (dateTimeFloatingMatch) {
+    const [, year, month, day, hours, minutes, seconds] = dateTimeFloatingMatch;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString();
+  }
+
+  return undefined;
+};
+
 const unfoldIcsText = (text: string): string[] => {
   return text
     .replace(/\r\n[ \t]/g, "")
@@ -40,8 +71,10 @@ const parseIcsEvents = (icsText: string): ParsedEvent[] => {
     } else if (line.startsWith("DTSTART")) {
       const [, value] = line.split(":");
       if (value) {
-        const normalized = value.length === 8 ? `${value}T000000Z` : value;
-        current.timestamp = normalized;
+        const normalized = normalizeIcsTimestamp(value);
+        if (normalized) {
+          current.timestamp = normalized;
+        }
       }
     }
   }
