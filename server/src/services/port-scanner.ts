@@ -130,17 +130,25 @@ export class PortScanner {
     }
   }
 
-  private getChildPids(parentPid: number): number[] {
+  private getChildPids(parentPid: number, depth: number = 3): number[] {
+    if (depth <= 0) return [];
     try {
       const output = execSync(`ps --ppid ${parentPid} -o pid= 2>/dev/null || true`, {
         encoding: 'utf-8',
         timeout: 3000,
       });
-      return output
+      const directChildren = output
         .trim()
         .split('\n')
         .map(s => parseInt(s.trim(), 10))
         .filter(n => !isNaN(n));
+
+      // Recursively get grandchildren
+      const allDescendants = [...directChildren];
+      for (const childPid of directChildren) {
+        allDescendants.push(...this.getChildPids(childPid, depth - 1));
+      }
+      return allDescendants;
     } catch {
       return [];
     }
