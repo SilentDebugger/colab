@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/layout/Layout';
 import { ProjectGrid } from './components/dashboard/ProjectGrid';
 import { ResourceMonitor } from './components/resources/ResourceMonitor';
+import { EnvironmentPeek } from './components/env/EnvironmentPeek';
 import { LogStreamer } from './components/logs/LogStreamer';
 import { LogsPage } from './components/logs/LogsPage';
 import { PortMap } from './components/ports/PortMap';
@@ -36,6 +37,7 @@ export function App() {
           <>
             <ProjectGrid projects={projects} loading={loading} onScan={handleScan} />
             <ResourceMonitor />
+            <EnvironmentPeek />
           </>
         );
       case 'logs':
