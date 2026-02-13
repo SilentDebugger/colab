@@ -88,6 +88,10 @@ async function start() {
 
   const settings = storage.getSettings();
 
+  // Wire cross-service dependencies
+  portScanner.setDiscovery(discovery);
+  healthChecker.setPortScanner(portScanner);
+
   // Start background services
   portScanner.start(settings.portScanInterval);
   healthChecker.start(settings.healthCheckInterval);

@@ -4,6 +4,8 @@ import type { LogEntry } from '@devdock/shared';
 interface LogLineProps {
   entry: LogEntry;
   searchTerm?: string;
+  projectName?: string;
+  projectColor?: string;
 }
 
 function highlightText(text: string, search: string): React.ReactNode {
@@ -24,7 +26,7 @@ function stripAnsi(text: string): string {
   return text.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
-export const LogLine = memo(function LogLine({ entry, searchTerm }: LogLineProps) {
+export const LogLine = memo(function LogLine({ entry, searchTerm, projectName, projectColor }: LogLineProps) {
   const isError = entry.stream === 'stderr';
   const isDevDock = entry.text.startsWith('[DevDock]');
   const cleanText = stripAnsi(entry.text);
@@ -46,6 +48,11 @@ export const LogLine = memo(function LogLine({ entry, searchTerm }: LogLineProps
       }`}
     >
       <span className="text-dock-muted select-none flex-shrink-0 w-16 text-right">{time}</span>
+      {projectName && (
+        <span className={`select-none flex-shrink-0 w-20 text-right truncate text-[10px] ${projectColor || 'text-dock-muted'}`}>
+          {projectName}
+        </span>
+      )}
       <span
         className={`flex-shrink-0 w-4 text-center select-none ${
           isError ? 'text-dock-danger' : 'text-dock-muted'
