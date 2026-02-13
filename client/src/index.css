@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-dock-border;
+  }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-dock-bg text-dock-text;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dock-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dock-muted;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-dock-accent text-white rounded-lg font-medium
+           hover:bg-dock-accent-light transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-dock-accent focus:ring-offset-2 focus:ring-offset-dock-bg
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply px-3 py-1.5 text-dock-text-dim rounded-lg font-medium
+           hover:bg-dock-hover hover:text-dock-text transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-dock-border;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-dock-danger/10 text-dock-danger rounded-lg font-medium
+           hover:bg-dock-danger/20 transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-dock-danger focus:ring-offset-2 focus:ring-offset-dock-bg;
+  }
+
+  .card {
+    @apply bg-dock-card border border-dock-border rounded-xl p-5
+           transition-all duration-200 hover:border-dock-accent/30;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-dock-surface border border-dock-border rounded-lg
+           text-dock-text placeholder-dock-muted
+           focus:outline-none focus:ring-2 focus:ring-dock-accent focus:border-transparent
+           transition-colors duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+}
