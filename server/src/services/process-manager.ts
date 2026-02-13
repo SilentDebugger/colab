@@ -46,31 +46,32 @@ export class ProcessManager {
       return { success: false, error: `Script "${scriptName}" not found` };
     }
 
-    let command: string;
-    let args: string[];
+    // Always run the command through a shell to maintain consistent process tracking.
+    // Running `npm run X` directly causes npm to exec-replace itself, reparenting the
+    // actual process to PID 1 and losing our handle on it.
+    let shellCmd: string;
 
     switch (project.configType) {
       case 'package.json':
-        command = 'npm';
-        args = ['run', scriptName];
+        // Run the actual script command directly instead of through npm,
+        // which gives us a stable process tree
+        shellCmd = script.command;
         break;
       case 'Makefile':
-        command = 'make';
-        args = [scriptName];
+        shellCmd = `make ${scriptName}`;
         break;
       case 'docker-compose.yml':
-        command = 'docker-compose';
-        args = ['up', scriptName];
+        shellCmd = script.command;
         break;
       case '.devdock.yml':
-        // For .devdock.yml, the command is the full command string
-        command = '/bin/sh';
-        args = ['-c', script.command];
+        shellCmd = script.command;
         break;
       default:
-        command = '/bin/sh';
-        args = ['-c', script.command];
+        shellCmd = script.command;
     }
+
+    const command = '/bin/sh';
+    const args = ['-c', shellCmd];
 
     try {
       const child = spawn(command, args, {
