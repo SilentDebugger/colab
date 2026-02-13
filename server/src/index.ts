@@ -10,6 +10,7 @@ import { portRoutes } from './routes/ports.js';
 import { groupRoutes } from './routes/groups.js';
 import { sessionRoutes } from './routes/session.js';
 import { settingsRoutes } from './routes/settings.js';
+import { envRoutes } from './routes/env.js';
 import { StorageService } from './services/storage.js';
 import { DiscoveryService } from './services/discovery.js';
 import { ProcessManager } from './services/process-manager.js';
@@ -63,6 +64,7 @@ app.use('/api/ports', portRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/env', envRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
