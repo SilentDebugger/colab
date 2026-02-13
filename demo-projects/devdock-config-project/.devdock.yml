@@ -1,0 +1,6 @@
+name: "Config Demo App"
+scripts:
+  start: "node server.js"
+  dev: "node --watch server.js"
+health: "http://localhost:4002/health"
+group: "demo-stack"
