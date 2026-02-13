@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Layout } from './components/layout/Layout';
 import { ProjectGrid } from './components/dashboard/ProjectGrid';
+import { ResourceMonitor } from './components/resources/ResourceMonitor';
 import { LogStreamer } from './components/logs/LogStreamer';
 import { LogsPage } from './components/logs/LogsPage';
 import { PortMap } from './components/ports/PortMap';
@@ -31,7 +32,12 @@ export function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <ProjectGrid projects={projects} loading={loading} onScan={handleScan} />;
+        return (
+          <>
+            <ProjectGrid projects={projects} loading={loading} onScan={handleScan} />
+            <ResourceMonitor />
+          </>
+        );
       case 'logs':
         return <LogsPage />;
       case 'ports':
