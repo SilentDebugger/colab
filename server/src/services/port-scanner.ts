@@ -2,16 +2,23 @@ import { execSync } from 'child_process';
 import type { Server } from 'socket.io';
 import type { PortInfo, ServerToClientEvents, ClientToServerEvents } from '@devdock/shared';
 import type { ProcessManager } from './process-manager.js';
+import type { DiscoveryService } from './discovery.js';
 
 export class PortScanner {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
   private processManager: ProcessManager;
+  private discovery: DiscoveryService | null = null;
   private interval: ReturnType<typeof setInterval> | null = null;
   private lastPorts: PortInfo[] = [];
 
   constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, processManager: ProcessManager) {
     this.io = io;
     this.processManager = processManager;
+  }
+
+  /** Called after DiscoveryService is available to resolve project names */
+  setDiscovery(discovery: DiscoveryService): void {
+    this.discovery = discovery;
   }
 
   start(intervalMs: number): void {
@@ -113,10 +120,13 @@ export class PortScanner {
     for (const [projectId, managed] of running) {
       const pid = managed.process.pid;
       if (pid) {
-        // Also check child PIDs via process group
-        pidToProject.set(pid, { id: projectId, name: projectId });
+        // Resolve the human-readable name from the discovery service
+        const resolvedName = this.discovery?.getProject(projectId)?.name ?? projectId;
+        const entry = { id: projectId, name: resolvedName };
+        // Map the direct PID and all child PIDs
+        pidToProject.set(pid, entry);
         this.getChildPids(pid).forEach(childPid => {
-          pidToProject.set(childPid, { id: projectId, name: projectId });
+          pidToProject.set(childPid, entry);
         });
       }
     }
