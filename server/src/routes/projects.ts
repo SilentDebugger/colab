@@ -3,6 +3,7 @@ import type { DiscoveryService } from '../services/discovery.js';
 import type { ProcessManager } from '../services/process-manager.js';
 import type { LogManager } from '../services/log-manager.js';
 import type { HealthChecker } from '../services/health-checker.js';
+import type { PortScanner } from '../services/port-scanner.js';
 import type { StorageService } from '../services/storage.js';
 import type { SessionService } from '../services/session.js';
 import type { Project } from '@devdock/shared';
@@ -14,8 +15,9 @@ projectRoutes.get('/', (req, res) => {
   const discovery: DiscoveryService = req.app.locals.discovery;
   const processManager: ProcessManager = req.app.locals.processManager;
   const healthChecker: HealthChecker = req.app.locals.healthChecker;
+  const portScanner: PortScanner = req.app.locals.portScanner;
 
-  const projects = discovery.getProjects().map(p => enrichProject(p, processManager, healthChecker));
+  const projects = discovery.getProjects().map(p => enrichProject(p, processManager, healthChecker, portScanner));
   res.json({ success: true, data: projects });
 });
 
@@ -26,13 +28,14 @@ projectRoutes.post('/scan', async (req, res) => {
   const processManager: ProcessManager = req.app.locals.processManager;
   const healthChecker: HealthChecker = req.app.locals.healthChecker;
 
+  const portScanner: PortScanner = req.app.locals.portScanner;
   const settings = storage.getSettings();
   const dirs = settings.scanDirectories.length > 0
     ? settings.scanDirectories
     : [process.env.HOME || '/home'];
 
   const projects = await discovery.scan(dirs, settings.scanDepth);
-  const enriched = projects.map(p => enrichProject(p, processManager, healthChecker));
+  const enriched = projects.map(p => enrichProject(p, processManager, healthChecker, portScanner));
   res.json({ success: true, data: enriched });
 });
 
@@ -42,11 +45,13 @@ projectRoutes.get('/:id', (req, res) => {
   const processManager: ProcessManager = req.app.locals.processManager;
   const healthChecker: HealthChecker = req.app.locals.healthChecker;
 
+  const portScanner: PortScanner = req.app.locals.portScanner;
+
   const project = discovery.getProject(req.params.id);
   if (!project) {
     return res.status(404).json({ success: false, error: 'Project not found' });
   }
-  res.json({ success: true, data: enrichProject(project, processManager, healthChecker) });
+  res.json({ success: true, data: enrichProject(project, processManager, healthChecker, portScanner) });
 });
 
 // Start project
@@ -134,12 +139,16 @@ projectRoutes.get('/:id/logs', (req, res) => {
   res.json({ success: true, data: logs });
 });
 
-function enrichProject(project: Project, pm: ProcessManager, hc: HealthChecker): Project {
+function enrichProject(project: Project, pm: ProcessManager, hc: HealthChecker, ps: PortScanner): Project {
+  const projectPorts = ps.getPorts()
+    .filter(p => p.projectId === project.id)
+    .map(p => p.port);
   return {
     ...project,
     status: pm.isRunning(project.id) ? 'running' : project.status === 'crashed' ? 'crashed' : 'stopped',
     pid: pm.getPid(project.id),
     activeScript: pm.getActiveScript(project.id),
     healthStatus: hc.getStatus(project.id),
+    ports: projectPorts,
   };
 }
