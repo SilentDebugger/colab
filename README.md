@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Home Dashboard Studio
+
+A dark-themed, highly configurable personal dashboard builder that helps entrepreneurs create a custom “home” for their information flow.
+
+The app supports:
+
+- Multi-dashboard layout builder
+- Drag + resize widgets on a responsive canvas
+- Visualization styles:
+  - Stat cards
+  - Feed/list
+  - Timeline
+  - Compact chart bars
+- Integration connectors (MVP):
+  - RSS
+  - GitHub
+  - Gmail
+  - Google Calendar
+  - Apple Calendar (ICS URL)
+
+> This is currently optimized for personal/single-user usage.
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment:
+
+```bash
+cp .env.example .env
+```
+
+3. Initialize local SQLite database:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+4. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Integration Configuration Notes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### RSS
+- `feedUrls`: Comma-separated URLs in the UI.
 
-## Learn More
+### GitHub
+- `owner` required
+- `repo` optional
+- `token` optional (recommended for higher rate limits/private data)
 
-To learn more about Next.js, take a look at the following resources:
+### Gmail
+- Requires a Google OAuth access token with Gmail read scopes.
+- Configure optional query (default: `is:unread in:inbox`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Google Calendar
+- Requires Google OAuth access token with calendar read scope.
+- `calendarId` defaults to `primary`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Apple Calendar (ICS)
+- Use a private ICS subscription URL.
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev        # start local dev server
+npm run lint       # run ESLint
+npm run build      # production build check
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture at a glance
+
+- **Next.js App Router + TypeScript**
+- **Prisma + SQLite** for local persistence
+- **Connector abstraction** for normalized data fetching
+- **Widget/config model** for generic renderable blocks
+- **Dark-first UI** for clean, calm daily usage
+
+## Security note
+
+Connector credentials are currently stored in local SQLite config JSON for personal-use convenience.  
+Before production multi-user deployment, add encrypted secret storage and provider OAuth flow hardening.

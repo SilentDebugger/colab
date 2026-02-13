@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum IntegrationType {
+  RSS
+  GITHUB
+  GMAIL
+  GOOGLE_CALENDAR
+  APPLE_CALENDAR_ICS
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  ERROR
+  NEEDS_CONFIGURATION
+}
+
+enum VisualizationType {
+  STAT
+  LIST
+  TIMELINE
+  CHART
+}
+
+model Dashboard {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  widgets     Widget[]
+}
+
+model Widget {
+  id                String            @id @default(cuid())
+  dashboardId       String
+  dashboard         Dashboard         @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  title             String
+  integrationId     String?
+  integration       Integration?      @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+  visualizationType VisualizationType @default(STAT)
+  configJson        String            @default("{}")
+  layoutX           Int               @default(0)
+  layoutY           Int               @default(0)
+  layoutW           Int               @default(4)
+  layoutH           Int               @default(4)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Integration {
+  id           String            @id @default(cuid())
+  name         String
+  type         IntegrationType
+  status       IntegrationStatus @default(NEEDS_CONFIGURATION)
+  configJson   String            @default("{}")
+  lastError    String?
+  lastSyncedAt DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  widgets      Widget[]
+  snapshots    DataSnapshot[]
+}
+
+model DataSnapshot {
+  id            String      @id @default(cuid())
+  integrationId String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  payloadJson   String
+  fetchedAt     DateTime    @default(now())
+}
