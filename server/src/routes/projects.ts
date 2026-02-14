@@ -4,6 +4,7 @@ import type { ProcessManager } from '../services/process-manager.js';
 import type { LogManager } from '../services/log-manager.js';
 import type { HealthChecker } from '../services/health-checker.js';
 import type { PortScanner } from '../services/port-scanner.js';
+import type { ResourceMonitor } from '../services/resource-monitor.js';
 import type { StorageService } from '../services/storage.js';
 import type { SessionService } from '../services/session.js';
 import type { Project } from '@devdock/shared';
@@ -171,6 +172,17 @@ projectRoutes.patch('/:id/health', (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: `Failed to update health: ${(err as Error).message}` });
+  }
+});
+
+// Get project resource usage
+projectRoutes.get('/:id/resources', (req, res) => {
+  try {
+    const resourceMonitor: ResourceMonitor = req.app.locals.resourceMonitor;
+    const usage = resourceMonitor.getUsage(req.params.id);
+    res.json({ success: true, data: usage });
+  } catch (err) {
+    res.status(500).json({ success: false, error: `Failed to get resources: ${(err as Error).message}` });
   }
 });
 

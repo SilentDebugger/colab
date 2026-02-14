@@ -33,6 +33,18 @@ export class ResourceMonitor {
     }
   }
 
+  private latestUsage: Map<string, ResourceUsage> = new Map();
+
+  /** Get the most recent resource usage for a specific project. */
+  getUsage(projectId: string): ResourceUsage | null {
+    return this.latestUsage.get(projectId) ?? null;
+  }
+
+  /** Get the most recent resource usage for all running projects. */
+  getAllUsage(): ResourceUsage[] {
+    return Array.from(this.latestUsage.values());
+  }
+
   async collectAll(): Promise<void> {
     const running = this.processManager.getRunningProjects();
 
@@ -43,6 +55,7 @@ export class ResourceMonitor {
       try {
         const usage = this.getAggregatedResourceUsage(projectId, pid);
         if (usage) {
+          this.latestUsage.set(projectId, usage);
           this.io.emit('project:resource', usage);
         }
       } catch {
@@ -50,10 +63,11 @@ export class ResourceMonitor {
       }
     }
 
-    // Clean up stale snapshots for stopped projects
+    // Clean up stale data for stopped projects
     for (const key of this.cpuSnapshots.keys()) {
       if (!running.has(key)) {
         this.cpuSnapshots.delete(key);
+        this.latestUsage.delete(key);
       }
     }
   }
